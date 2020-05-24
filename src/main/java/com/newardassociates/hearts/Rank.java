@@ -1,7 +1,6 @@
 package com.newardassociates.hearts;
 
 public enum Rank {
-    ACE,
     TWO,
     THREE,
     FOUR,
@@ -13,7 +12,8 @@ public enum Rank {
     TEN,
     JACK,
     QUEEN,
-    KING;
+    KING,
+    ACE;
 
     @Override public String toString() {
         switch (this) {

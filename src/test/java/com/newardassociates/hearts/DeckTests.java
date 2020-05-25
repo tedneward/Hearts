@@ -1,10 +1,11 @@
 package com.newardassociates.hearts;
 
+import com.google.common.collect.Iterables;
 import org.junit.jupiter.api.Test;
-
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static com.google.common.collect.Iterables.*;
 
 public class DeckTests {
     @Test
@@ -14,12 +15,12 @@ public class DeckTests {
 
         // Make sure there's four suits, 13 cards each
         for (Suit s : Suit.class.getEnumConstants()) {
-            assertEquals(13, deck.cards.stream().filter( (card) -> card.suit == s ).toArray().length);
+            assertEquals(13, size(filter(deck, (card) -> card.suit == s)));
         }
 
         // Make sure there's 13 ranks, 4 cards each
         for (Rank r : Rank.class.getEnumConstants()) {
-            assertEquals( 4, deck.cards.stream().filter( (card) -> card.rank == r).toArray().length );
+            assertEquals(4, size(filter(deck, (card) -> card.rank == r)));
         }
     }
 

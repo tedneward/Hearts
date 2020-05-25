@@ -1,5 +1,6 @@
 package com.newardassociates.hearts;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 public class Card {
@@ -68,6 +69,23 @@ public class Card {
         }
     }
 
+    public static Comparator<Card> BY_SUIT_THEN_RANK = new Comparator<Card>() {
+        @Override
+        public int compare(Card o1, Card o2) {
+            int suitOrdinal = o1.suit.ordinal() - o2.suit.ordinal();
+            if (suitOrdinal == 0)
+                return o1.rank.ordinal() - o2.rank.ordinal();
+            else
+                return suitOrdinal;
+        }
+    };
+
+    /*
+     * NOTE: I don't care about unused code warnings on the constants below; they are
+     * here for ease-of-use during testing and other specific-comparison cases, and if I
+     * was going to do a few, I decided to do 'em all.
+     */
+
     public static final Card TwoClubs = new Card(Rank.TWO, Suit.CLUB);
     public static final Card ThreeClubs = new Card(Rank.THREE, Suit.CLUB);
     public static final Card FourClubs = new Card(Rank.FOUR, Suit.CLUB);
@@ -80,6 +98,7 @@ public class Card {
     public static final Card JackClubs = new Card(Rank.JACK, Suit.CLUB);
     public static final Card QueenClubs = new Card(Rank.QUEEN, Suit.CLUB);
     public static final Card KingClubs = new Card(Rank.KING, Suit.CLUB);
+    public static final Card AceClubs = new Card(Rank.ACE, Suit.CLUB);
 
     public static final Card TwoDiamonds = new Card(Rank.TWO, Suit.DIAMOND);
     public static final Card ThreeDiamonds = new Card(Rank.THREE, Suit.DIAMOND);
@@ -93,6 +112,7 @@ public class Card {
     public static final Card JackDiamonds = new Card(Rank.JACK, Suit.DIAMOND);
     public static final Card QueenDiamonds = new Card(Rank.QUEEN, Suit.DIAMOND);
     public static final Card KingDiamonds = new Card(Rank.KING, Suit.DIAMOND);
+    public static final Card AceDiamonds = new Card(Rank.ACE, Suit.DIAMOND);
 
     public static final Card TwoHearts = new Card(Rank.TWO, Suit.HEART);
     public static final Card ThreeHearts = new Card(Rank.THREE, Suit.HEART);
@@ -106,6 +126,7 @@ public class Card {
     public static final Card JackHearts = new Card(Rank.JACK, Suit.HEART);
     public static final Card QueenHearts = new Card(Rank.QUEEN, Suit.HEART);
     public static final Card KingHearts = new Card(Rank.KING, Suit.HEART);
+    public static final Card AceHearts = new Card(Rank.ACE, Suit.HEART);
 
     public static final Card TwoSpades = new Card(Rank.TWO, Suit.SPADE);
     public static final Card ThreeSpades = new Card(Rank.THREE, Suit.SPADE);
@@ -119,4 +140,5 @@ public class Card {
     public static final Card JackSpades = new Card(Rank.JACK, Suit.SPADE);
     public static final Card QueenSpades = new Card(Rank.QUEEN, Suit.SPADE);
     public static final Card KingSpades = new Card(Rank.KING, Suit.SPADE);
+    public static final Card AceSpades = new Card(Rank.ACE, Suit.SPADE);
 }

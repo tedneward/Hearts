@@ -1,6 +1,10 @@
 package com.newardassociates.hearts;
 
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CardsTests {
@@ -36,6 +40,27 @@ public class CardsTests {
     @Test
     void stringYieldsTwoOfHearts() {
         assertEquals(Card.TwoHearts, Card.fromString("2H"));
+    }
+
+    @Test
+    void handComparator() {
+        List<Card> cards = new ArrayList<>();
+        cards.add(Card.AceClubs);
+        cards.add(Card.TwoClubs);
+        cards.add(Card.ThreeClubs);
+        cards.add(Card.TwoHearts);
+        cards.add(Card.QueenHearts);
+        cards.add(Card.AceSpades);
+        cards.add(Card.FiveHearts);
+        cards.add(Card.EightDiamonds);
+        System.out.println(cards);
+
+        cards.sort(Card.BY_SUIT_THEN_RANK);
+        System.out.println(cards);
+
+        assertEquals(Card.TwoClubs, cards.get(0));
+        assertEquals(Card.ThreeClubs, cards.get(1));
+        assertEquals(Card.AceSpades, cards.get(7));
     }
 }
 

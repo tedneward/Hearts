@@ -1,9 +1,9 @@
 package com.newardassociates.hearts;
 
 public enum Suit {
-    HEART,
-    DIAMOND,
     CLUB,
+    DIAMOND,
+    HEART,
     SPADE;
 
     @Override public String toString() {

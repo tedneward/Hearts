@@ -7,8 +7,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class Deck implements Iterable<Card> {
-    /*private*/ List<Card> cards = new ArrayList<>();
+import static com.google.common.base.Preconditions.*;
+
+public class Deck
+        implements Iterable<Card> {
+    private List<Card> cards = new ArrayList<>();
 
     /**
      * Create a new 52-card deck, shuffle it
@@ -40,21 +43,13 @@ public class Deck implements Iterable<Card> {
     }
 
     public List<Hand> dealHands(int numberOfHands) {
-        if ((cards.size() % numberOfHands) != 0) {
-            throw new IllegalArgumentException("Cannot evenly deal " + cards.size() + " to " + numberOfHands + " hands");
-        }
+        checkArgument((cards.size() % numberOfHands) == 0,
+                "Cannot evenly deal %s to %s hands", cards.size(), numberOfHands);
 
         List<Hand> hands = new ArrayList<>(numberOfHands);
-        for (int i=0; i<numberOfHands; i++) {
-            hands.add(new Hand());
+        for (List<Card> part : Iterables.partition(cards, (cards.size() / numberOfHands))) {
+            hands.add(new Hand(part));
         }
-
-        Iterable<List<Card>> partitions = Iterables.partition(cards, (cards.size() / numberOfHands));
-        int i=0;
-        for (List<Card> part : partitions) {
-            hands.get(i++).add(part);
-        }
-
         return hands;
     }
 }

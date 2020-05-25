@@ -1,9 +1,7 @@
 package com.newardassociates.hearts;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,7 +12,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 public class Hand
         implements Iterable<Card> {
-    private List<Card> cards = new ArrayList<>();
+    private final List<Card> cards = new ArrayList<>();
 
     public Hand() {
         // Empty hand; nothing to do. Presumably cards will be added to
@@ -22,9 +20,19 @@ public class Hand
     }
     public Hand(List<Card> cs) {
         this.cards.addAll(cs);
+        sort();
     }
     public Hand(Card... cards) {
         this(Lists.newArrayList(cards));
+    }
+
+    /**
+     * Create a Hand from a String representation (according to the encoding used by Card)
+     *
+     * @param cards A space-separated list of rank-suit pairs (2C 2S 2H == TwoClubs, TwoSpades, TwoHearts)
+     */
+    public Hand(String cards) {
+        this(Card.collectionFromString(cards));
     }
 
     @Override
@@ -62,6 +70,8 @@ public class Hand
 
     public int handSize() { return cards.size(); }
 
+    // Not sure why NotNull isn't available to my compile path; fix this later
+    @SuppressWarnings("NullableProblems")
     @Override
     public Iterator<Card> iterator() {
         return this.cards.iterator();

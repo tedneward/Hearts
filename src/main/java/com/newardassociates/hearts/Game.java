@@ -1,8 +1,6 @@
 package com.newardassociates.hearts;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -17,9 +15,8 @@ public class Game {
             @Override
             public Iterator<Player> iterator() {
                 return new Iterator<Player>() {
-                    int start = playerList.indexOf(startingPlayer);
+                    final int start = playerList.indexOf(startingPlayer);
                     int count = 0;
-
                     Player current = playerList.get(start + count);
 
                     @Override
@@ -72,15 +69,23 @@ public class Game {
 
     public Game() { }
 
-    public Game(Options opts) {
-        options = opts;
-    }
-
     public void attachView(View view) {
         // Later allow for composite views by creating a CompositeView class that tees everything
         // to multiple views?
         // Should I check for null before assignment?
         this.view = view;
+    }
+
+    public List<Player> getPlayers() {
+        return Collections.unmodifiableList(players);
+    }
+
+    public Player getPlayerForName(String name) {
+        for (Player player : players) {
+            if (player.getName().equals(name))
+                return player;
+        }
+        return null;
     }
 
     // For each scoring round: deal cards, pass, player with the two (or three or four) of clubs leads,
@@ -136,32 +141,40 @@ public class Game {
         }
     }
 
+    public class Trick {
+        public List<AbstractMap.SimpleEntry<Player, Card>> plays = new ArrayList<>(4);
+
+        public void play(Player player, Card card) {
+            plays.add(new AbstractMap.SimpleEntry<>(player, card));
+        }
+
+        public Player getWinningPlayer() {
+            // TODO
+            return null;
+        }
+    }
+
     public Trick playTrick(Player leadingPlayer) {
+        Trick trick = new Trick();
+
         if (leadingPlayer == null) {
             // This is the first trick--the leading player is the one with the appropriate card
             leadingPlayer = findPlayerWith(options.getStartingCard());
-            view.display(leadingPlayer.getName() + " leads with the " + options.getStartingCard());
+            view.display(leadingPlayer.getName() + " must lead with the " + options.getStartingCard());
         }
 
         // Rotate through the list of Players, all the way around to the start
         // of the List if necessary (which it often will be); each Player gets
         // to play one Card
         for (Player player : turnOrder(players, leadingPlayer)) {
-            view.chooseCard(player);
+            Card chosenCard = view.chooseCard(player);
+
+            // verify chosen card is legal
+
+            trick.play(player, chosenCard);
         }
 
-        int startingIndex = players.indexOf(leadingPlayer);
-        for (int i = 0; i < options.numberOfPlayers; i++) {
-            int lookupIndex = startingIndex + i;
-            if (lookupIndex >= options.numberOfPlayers) {
-                lookupIndex -= options.numberOfPlayers;
-            }
-
-            view.chooseCard(players.get(lookupIndex));
-        }
-
-        //view.chooseCard(leadingPlayer);
-        return null; //FIXME
+        return trick; //FIXME
     }
 
     private Player findPlayerWith(Card card) {

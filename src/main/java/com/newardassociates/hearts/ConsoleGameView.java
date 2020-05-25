@@ -62,6 +62,7 @@ public class ConsoleGameView implements View {
     @Override
     public Card chooseCard(Player player) {
         System.console().writer().println("Player " + player.getName() + ", please choose a card:");
+
         return null;
     }
 }

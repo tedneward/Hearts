@@ -3,6 +3,7 @@ package com.newardassociates.hearts;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,14 +54,27 @@ public class CardsTests {
         cards.add(Card.AceSpades);
         cards.add(Card.FiveHearts);
         cards.add(Card.EightDiamonds);
-        System.out.println(cards);
 
         cards.sort(Card.BY_SUIT_THEN_RANK);
-        System.out.println(cards);
 
         assertEquals(Card.TwoClubs, cards.get(0));
         assertEquals(Card.ThreeClubs, cards.get(1));
         assertEquals(Card.AceSpades, cards.get(7));
+    }
+
+    @Test
+    void trickTest1() {
+        List<Card> trick1 = Card.collectionFromString("3C 5C 2C 4C");
+        trick1.sort(Card.HIGHEST_CARD_OF(Suit.CLUB));
+        assertEquals(Card.FiveClubs, trick1.get(0));
+        assertEquals(Card.TwoClubs, trick1.get(3));
+    }
+    @Test
+    void trickTest2() {
+        List<Card> trick1 = Card.collectionFromString("3C 5C 8C 4C");
+        trick1.sort(Card.HIGHEST_CARD_OF(Suit.CLUB));
+        assertEquals(Card.EightClubs, trick1.get(0));
+        assertEquals(Card.ThreeClubs, trick1.get(3));
     }
 }
 

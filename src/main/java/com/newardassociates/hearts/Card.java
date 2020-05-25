@@ -1,6 +1,8 @@
 package com.newardassociates.hearts;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 public class Card {
@@ -28,6 +30,14 @@ public class Card {
         return rank.toString() + suit.toString();
     }
 
+    public static List<Card> collectionFromString(String cardString) {
+        List<Card> cards = new ArrayList<>();
+        for (String cardRep : cardString.split(" ")) {
+            Card card = Card.fromString(cardRep);
+            cards.add(card);
+        }
+        return cards;
+    }
     public static Card fromString(String representation) {
         if (representation.length() == 2) {
             char rankCh = representation.charAt(0);
@@ -79,6 +89,32 @@ public class Card {
                 return suitOrdinal;
         }
     };
+
+    public static Comparator<Card> HIGHEST_CARD_OF(Suit suit) {
+        // if o1 > o2 return 1
+        // if o1 < o2 return -1
+        return new Comparator<Card>() {
+            @Override
+            public int compare(Card o1, Card o2) {
+                // If o1 is the led suit, it automatically wins
+                if (o1.suit == suit && o2.suit != suit) {
+                    return 1;
+                }
+                // if o2 is the led suit, it automatically wins
+                else if (o1.suit != suit && o2.suit == suit) {
+                    return -1;
+                }
+                // if neither is the led suit, who cares?
+                else if (o1.suit != suit && o2.suit != suit) {
+                    return 0;
+                }
+                // if they're both of the led suit, then do a rank-compare
+                else {
+                    return o2.rank.ordinal() - o1.rank.ordinal();
+                }
+            }
+        };
+    }
 
     /*
      * NOTE: I don't care about unused code warnings on the constants below; they are

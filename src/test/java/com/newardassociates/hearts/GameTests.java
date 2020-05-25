@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,9 +30,9 @@ class TestView implements View {
     @Override
     public Card chooseCard(Player player) {
         // If we roll off the edge, then so be it--it's a bug in the tests, so throw the exception
-        int current = choiceCt;
-        choiceCt++;
-        return choiceFns.get(current).apply(player);
+        Card card = choiceFns.get(choiceCt++).apply(player);
+        System.out.println(player.getName() + " plays " + card);
+        return card;
     }
 }
 
@@ -50,12 +51,50 @@ public class GameTests {
 
     @Test
     public void attachATestView() {
-        Game game = new Game(options);
+        Game game = new Game();
 
         TestView view = new TestView(options,
                 (ted) -> ted.getHand().remove(0)
         );
 
         game.attachView(view);
+    }
+
+    @Test
+    public void fourPlayersShouldStartWithTwoOfClubs() {
+        Game.Options options = new Game.Options();
+        options.numberOfPlayers = 4;
+        assertEquals(Card.TwoClubs, options.getStartingCard());
+    }
+
+    @Test
+    public void playOneRound() {
+        Game game = new Game();
+        TestView view = new TestView(options,
+                (ted) -> ted.getHand().examine(0),
+                (charl) -> charl.getHand().examine(0),
+                (mike) -> mike.getHand().examine(0),
+                (matt) -> matt.getHand().examine(0)
+                );
+            // No chooseCard functions needed here
+        game.attachView(view);
+
+        game.prepare();
+
+        Map<String, List<Card>> handMap = Map.of(
+                "Ted", Arrays.asList(Card.TwoClubs),
+                "Char", Arrays.asList(Card.ThreeClubs),
+                "Mike", Arrays.asList(Card.FourClubs),
+                "Matt", Arrays.asList(Card.FiveClubs)
+        );
+
+        for (Player player : game.getPlayers()) {
+            Hand hand = new Hand();
+            hand.add(handMap.get(player.getName()));
+            player.setHand(hand);
+        }
+
+        Game.Trick firstTrick = game.playTrick(null);
+        //assertEquals(game.getPlayerForName("Matt"), firstTrick.getWinningPlayer());
     }
 }

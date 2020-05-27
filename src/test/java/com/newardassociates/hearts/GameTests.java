@@ -74,9 +74,7 @@ public class GameTests {
                 (mike) -> mike.getHand().examine(0),
                 (matt) -> matt.getHand().examine(0)
                 );
-            // No chooseCard functions needed here
         game.attachView(view);
-
         game.prepare();
 
         Map<String, List<Card>> handMap = Map.of(
@@ -94,5 +92,6 @@ public class GameTests {
 
         Game.Trick firstTrick = game.playTrick(null);
         assertEquals(game.getPlayerForName("Matt"), firstTrick.getWinningPlayer());
+        assertEquals(0, firstTrick.getScore());
     }
 }

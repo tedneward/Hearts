@@ -1,8 +1,7 @@
 package com.newardassociates.hearts;
 
 public class ConsoleGameView implements View {
-    public ConsoleGameView() {
-    }
+    public ConsoleGameView() { }
     // Future enhancement: take stdin/stdout as constructor parameters?
 
     private int prompt(int def, String message, Object... opts) {

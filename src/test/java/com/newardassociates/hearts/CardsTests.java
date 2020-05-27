@@ -61,21 +61,6 @@ public class CardsTests {
         assertEquals(Card.ThreeClubs, cards.get(1));
         assertEquals(Card.AceSpades, cards.get(7));
     }
-
-    @Test
-    void trickTest1() {
-        List<Card> trick1 = Card.collectionFromString("3C 5C 2C 4C");
-        trick1.sort(Card.HIGHEST_CARD_OF(Suit.CLUB));
-        assertEquals(Card.FiveClubs, trick1.get(0));
-        assertEquals(Card.TwoClubs, trick1.get(3));
-    }
-    @Test
-    void trickTest2() {
-        List<Card> trick1 = Card.collectionFromString("3C 5C 8C 4C");
-        trick1.sort(Card.HIGHEST_CARD_OF(Suit.CLUB));
-        assertEquals(Card.EightClubs, trick1.get(0));
-        assertEquals(Card.ThreeClubs, trick1.get(3));
-    }
 }
 
 

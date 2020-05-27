@@ -90,32 +90,6 @@ public class Card {
         }
     };
 
-    public static Comparator<Card> HIGHEST_CARD_OF(Suit suit) {
-        // if o1 > o2 return 1
-        // if o1 < o2 return -1
-        return new Comparator<Card>() {
-            @Override
-            public int compare(Card o1, Card o2) {
-                // If o1 is the led suit, it automatically wins
-                if (o1.suit == suit && o2.suit != suit) {
-                    return 1;
-                }
-                // if o2 is the led suit, it automatically wins
-                else if (o1.suit != suit && o2.suit == suit) {
-                    return -1;
-                }
-                // if neither is the led suit, who cares?
-                else if (o1.suit != suit && o2.suit != suit) {
-                    return 0;
-                }
-                // if they're both of the led suit, then do a rank-compare
-                else {
-                    return o2.rank.ordinal() - o1.rank.ordinal();
-                }
-            }
-        };
-    }
-
     /*
      * NOTE: I don't care about unused code warnings on the constants below; they are
      * here for ease-of-use during testing and other specific-comparison cases, and if I

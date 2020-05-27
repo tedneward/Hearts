@@ -148,9 +148,52 @@ public class Game {
             plays.add(new AbstractMap.SimpleEntry<>(player, card));
         }
 
+        public Player getLeadingPlayer() {
+            checkArgument(plays.size() > 0);
+            return plays.get(0).getKey();
+        }
+
+        public Suit getLeadingSuit() {
+            checkArgument(plays.size() > 0);
+            return plays.get(0).getValue().suit;
+        }
+
+        public AbstractMap.SimpleEntry<Player, Card> getWinningPlay() {
+            checkArgument(plays.size() == options.numberOfPlayers);
+
+            Suit leadSuit = getLeadingSuit();
+            return plays.stream()
+                    .filter( (pair) -> pair.getValue().suit == leadSuit )
+                    .max( (c1, c2) -> c1.getValue().rank.ordinal() - c2.getValue().rank.ordinal() ).get();
+        }
+
         public Player getWinningPlayer() {
-            // TODO
-            return null;
+            return getWinningPlay().getKey();
+        }
+
+        public Card getWinningCard() {
+            return getWinningPlay().getValue();
+        }
+
+        public int getScore() {
+            int score = 0;
+
+            for (AbstractMap.SimpleEntry<Player, Card> play : plays) {
+                Card card = play.getValue();
+                if (card.suit == Suit.HEART) {
+                    score++;
+                }
+
+                if (card == Card.QueenSpades) {
+                    score += 13;
+                }
+
+                if (card == Card.JackDiamonds && Game.this.options.jackOfDiamondsSubtractsTen) {
+                    score -= 10;
+                }
+            }
+
+            return score;
         }
     }
 

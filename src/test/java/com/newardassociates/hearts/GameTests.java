@@ -3,10 +3,7 @@ package com.newardassociates.hearts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,6 +13,7 @@ class TestView implements View {
     int choiceCt = 0;
     List<Function<Player, Card>> choiceFns = new ArrayList<>();
 
+    @SafeVarargs
     TestView(Game.Options options, Function<Player, Card>... choices) {
         this.options = options;
         this.choiceFns.addAll(Arrays.asList(choices));
@@ -31,7 +29,7 @@ class TestView implements View {
     public Card chooseCard(Player player) {
         // If we roll off the edge, then so be it--it's a bug in the tests, so throw the exception
         Card card = choiceFns.get(choiceCt++).apply(player);
-        System.out.println(player.getName() + " plays " + card);
+        //System.out.println(player.getName() + " plays " + card);
         return card;
     }
 }
@@ -82,10 +80,10 @@ public class GameTests {
         game.prepare();
 
         Map<String, List<Card>> handMap = Map.of(
-                "Ted", Arrays.asList(Card.TwoClubs),
-                "Char", Arrays.asList(Card.ThreeClubs),
-                "Mike", Arrays.asList(Card.FourClubs),
-                "Matt", Arrays.asList(Card.FiveClubs)
+                "Ted", Collections.singletonList(Card.TwoClubs),
+                "Char", Collections.singletonList(Card.ThreeClubs),
+                "Mike", Collections.singletonList(Card.FourClubs),
+                "Matt", Collections.singletonList(Card.FiveClubs)
         );
 
         for (Player player : game.getPlayers()) {
@@ -95,6 +93,6 @@ public class GameTests {
         }
 
         Game.Trick firstTrick = game.playTrick(null);
-        //assertEquals(game.getPlayerForName("Matt"), firstTrick.getWinningPlayer());
+        assertEquals(game.getPlayerForName("Matt"), firstTrick.getWinningPlayer());
     }
 }

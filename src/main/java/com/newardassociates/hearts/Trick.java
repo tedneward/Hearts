@@ -41,20 +41,16 @@ public class Trick {
         leadingPlayer = player;
     }
 
-    // Method used to create an infinite cycle around the given stream
-    private static <T> Stream<T> cycle(Supplier<Stream<T>> stream) {
-        return Stream.generate(stream).flatMap(s -> s);
-    }
-
     public Iterable<Player> turnOrder() {
         checkArgument(leadingPlayer != null,
                 "Cannot resolve turn order without knowing who the leadingPlayer is!");
 
         List<Player> playerList = round.getGame().getPlayers();
-        return cycle(playerList::stream)
-                .skip(playerList.indexOf(leadingPlayer))
-                .limit(getRound().getGame().getOptions().numberOfPlayers)::iterator;
+        return Stream.generate(playerList::stream).flatMap(s -> s)   //cycle infinitely
+                .skip(playerList.indexOf(leadingPlayer))             //skip the players before the leader
+                .limit(getRound().getGame().getOptions().numberOfPlayers)::iterator; // limit to the number of players
     }
+
 
     public String legalCardToPlay(Play play) {
         logger.entering(Game.Options.class.getCanonicalName(),

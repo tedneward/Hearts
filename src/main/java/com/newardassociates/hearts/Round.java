@@ -31,4 +31,10 @@ public class Round {
     public List<Trick> getTricks() { return Collections.unmodifiableList(tricks); }
 
     public boolean over() { return tricks.size() == getGame().getHandSize(); }
+
+    public Trick beginTrick() {
+        Trick trick = new Trick(this);
+        tricks.add(trick);
+        return trick;
+    }
 }

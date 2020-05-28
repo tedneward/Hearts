@@ -5,7 +5,12 @@ import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -36,20 +41,19 @@ public class Trick {
         leadingPlayer = player;
     }
 
+    // Method used to create an infinite cycle around the given stream
+    private static <T> Stream<T> cycle(Supplier<Stream<T>> stream) {
+        return Stream.generate(stream).flatMap(s -> s);
+    }
+
     public Iterable<Player> turnOrder() {
         checkArgument(leadingPlayer != null,
                 "Cannot resolve turn order without knowing who the leadingPlayer is!");
 
         List<Player> playerList = round.getGame().getPlayers();
-        return
-                // Take 4 of the Players...
-                Iterables.limit(
-                    // ... starting with the leadingPlayer...
-                    Iterables.skip(
-                            // .. cycling around the end when we reach it
-                            Iterables.cycle(playerList), playerList.indexOf(leadingPlayer)
-                    ),
-                4);
+        return cycle(playerList::stream)
+                .skip(playerList.indexOf(leadingPlayer))
+                .limit(getRound().getGame().getOptions().numberOfPlayers)::iterator;
     }
 
     public String legalCardToPlay(Play play) {
@@ -110,4 +114,23 @@ public class Trick {
                 .max( (p1, p2) -> p1.card.rank.ordinal() - p2.card.rank.ordinal() ).get();
     }
     public Player getWinningPlayer() { return getWinningPlay().player; }
+
+    public int getScore() {
+        int score = 0;
+        for (Play play : plays) {
+            Card card = play.card;
+            if (card.suit == Suit.HEART) {
+                score++;
+            }
+
+            if (card == Card.QueenSpades) {
+                score += 13;
+            }
+
+            if (card == Card.JackDiamonds && getRound().getGame().getOptions().jackOfDiamondsSubtractsTen) {
+                score -= 10;
+            }
+        }
+        return score;
+    }
 }

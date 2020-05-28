@@ -77,4 +77,30 @@ public class TrickTests {
         assertEquals(1, mattSeen);
     }
 
+    @Test public void noPointsTrickScoresZero() {
+        trick.add(new Play(game.getPlayerFromName("Ted"), Card.EightClubs));
+        trick.add(new Play(game.getPlayerFromName("Char"), Card.JackClubs));
+        trick.add(new Play(game.getPlayerFromName("Mike"), Card.AceClubs));
+        trick.add(new Play(game.getPlayerFromName("Matt"), Card.NineClubs));
+
+        assertEquals(0, trick.getScore());
+    }
+    @Test public void oneHeartTrickScoresOne() {
+
+    }
+    @Test public void fourHeartsTrickScoresFour() {
+
+    }
+    @Test public void spadesTrickTakingQueenScoresThirteen() {
+
+    }
+    @Test public void spadesTrickWithTwoHeartsAndQueenScoresFifteen() {
+
+    }
+    @Test public void oneHeartPlusJackDScoresNegNineWhenJackIsOn() {
+
+    }
+    @Test public void oneHeartPlusJackDScoresNegNineWhenJackIsOff() {
+
+    }
 }

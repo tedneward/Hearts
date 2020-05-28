@@ -1,10 +1,9 @@
 package com.newardassociates.hearts;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -42,30 +41,15 @@ public class Trick {
                 "Cannot resolve turn order without knowing who the leadingPlayer is!");
 
         List<Player> playerList = round.getGame().getPlayers();
-        return new Iterable<Player>() {
-            @Override
-            public Iterator<Player> iterator() {
-                return new Iterator<Player>() {
-                    final int start = playerList.indexOf(leadingPlayer);
-                    int count = 0;
-                    Player current = playerList.get(start + count);
-
-                    @Override
-                    public boolean hasNext() {
-                        return count < playerList.size();
-                    }
-
-                    @Override
-                    public Player next() {
-                        Player toBeReturned = current;
-                        count++;
-                        int next = (start + count) < playerList.size() ? (start + count) : (start + count - playerList.size());
-                        current = playerList.get(next);
-                        return toBeReturned;
-                    }
-                };
-            }
-        };
+        return
+                // Take 4 of the Players...
+                Iterables.limit(
+                    // ... starting with the leadingPlayer...
+                    Iterables.skip(
+                            // .. cycling around the end when we reach it
+                            Iterables.cycle(playerList), playerList.indexOf(leadingPlayer)
+                    ),
+                4);
     }
 
     public String legalCardToPlay(Play play) {

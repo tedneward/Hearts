@@ -3,6 +3,7 @@ package com.newardassociates.hearts;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.*;
@@ -35,8 +36,10 @@ public class Game {
     public Game(Options options) {
         checkArgument(options.numberOfPlayers >= 3, "Cannot play with less than 3 players");
         checkArgument(options.numberOfPlayers <= 6, "Cannot play with more than 6 players");
-        checkArgument(options.playerNames.size() != options.numberOfPlayers,
-                "We don't have names for all of the players!");
+        checkArgument(options.playerNames.size() == options.numberOfPlayers,
+                "We don't have names for all of the players! " +
+                        "We have " + options.numberOfPlayers + " players " +
+                        "and the following names: " + options.playerNames);
 
         for (String name : options.playerNames) {
             players.add(new Player(name));
@@ -47,6 +50,12 @@ public class Game {
     public Options getOptions() { return options; }
     public List<Player> getPlayers() { return Collections.unmodifiableList(players); }
     public List<Round> getRounds() { return Collections.unmodifiableList(rounds); }
+
+    public Player getPlayerFromName(String name) {
+        Optional<Player> result =
+                players.stream().filter( (player) -> player.getName().equals(name) ).findFirst();
+        return result.orElse(null);
+    }
 
     /**
      * Based on the number of players, what card do we lead with?

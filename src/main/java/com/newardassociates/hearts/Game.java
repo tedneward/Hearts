@@ -1,14 +1,21 @@
 package com.newardassociates.hearts;
 
+import com.newardassociates.hearts.util.Pair;
+import com.newardassociates.hearts.util.Reason;
+
 import java.util.*;
+import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.*;
 
 public class Game {
+    private Logger logger = Logger.getLogger("Game");
+
     private View view;
-    private List<Player> players = new ArrayList<>();
-    private Deck deck;
+    private final List<Player> players = new ArrayList<>();
     private Options options;
+
+    private final List<Round> rounds = new ArrayList<>();
 
     public static Iterable<Player> turnOrder(List<Player> playerList, Player startingPlayer) {
         return new Iterable<Player>() {
@@ -63,6 +70,47 @@ public class Game {
             }
             throw new IllegalArgumentException("Should never have <3 or >6 players");
         }
+
+        /**
+         * Check the validity of this card from this player for this trick.
+         *
+         * @param trick The current trick
+         * @param player The player proposing the play
+         * @param card The card the player chose to play
+         * @return True if this is legal, false otherwise
+         */
+        public Reason legalCardToPlay(Round round, Trick trick, Player player, Card card) {
+            // Is this the first trick?
+            if (round.tricks.size() == 0) {
+                // Can points be played on the first round?
+                if ((card.suit == Suit.HEART) && (!bloodOnFirstRound)) {
+                    return new Reason(false, "You cannot spill blood on the first round");
+                }
+                if (card == Card.QueenSpades && (!bloodOnFirstRound) && (queenOfSpadesIsAHeart)) {
+                    return new Reason(false, "You cannot play points on the first round");
+                }
+            }
+
+            // Is this the first card in the trick and the card is a heart?
+            if ((trick.plays.size() == 0) && (card.suit == Suit.HEART)) {
+                // Have hearts been broken? Can't lead a heart until they have
+                if (! round.heartsBroken()) {
+                    return new Reason(false, "You cannot lead a Heart until Hearts are broken");
+                }
+            }
+
+            // Is the card of the led suit?
+            if ((trick.plays.size() > 0) && (card.suit != trick.getLeadingSuit())) {
+                // Does the player have a card of that suit?
+                for (Card c : player.getHand()) {
+                    if (c.suit == trick.getLeadingSuit()) {
+                        return new Reason(false, "You must play a card of the suit lead");
+                    }
+                }
+            }
+
+            return new Reason(true, "");
+        }
         // Add methods that handle the different options directly;
         // let's try to encapsulate the rules-variations here
     }
@@ -70,10 +118,10 @@ public class Game {
     public Game() { }
 
     public void attachView(View view) {
-        // Later allow for composite views by creating a CompositeView class that tees everything
-        // to multiple views?
-        // Should I check for null before assignment?
+        // Should I check for null before assignment? Later allow for composite views by creating
+        // a CompositeView class that tees everything to multiple views?
         this.view = view;
+        this.view.attachGame(this);
     }
 
     public List<Player> getPlayers() {
@@ -86,6 +134,10 @@ public class Game {
                 return player;
         }
         return null;
+    }
+
+    public boolean gameOver() {
+        return false;
     }
 
     // For each scoring round: deal cards, pass, player with the two (or three or four) of clubs leads,
@@ -118,19 +170,70 @@ public class Game {
         return true;
     }
 
-    public void dealCards() {
-        Deck deck = new Deck();
-        switch (options.numberOfPlayers) {
-            case 3:
-                deck = deck.remove(Card.TwoClubs);
-                break;
-            case 5:
-                deck = deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds);
-                break;
-            case 6:
-                deck = deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds);
-                break;
+    public class Round {
+        public List<Trick> tricks = new ArrayList<>();
+        public Map<Player, Integer> scores = new HashMap<>();
+
+        public Round() {
+            for (Player p : Game.this.getPlayers()) {
+                scores.put(p, 0);
+            }
         }
+
+        public boolean heartsBroken() {
+            for (Trick t : tricks) {
+                for (Pair<Player, Card> play : t.plays) {
+                    if (play.second.suit == Suit.HEART) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public void add(Trick trick) { tricks.add(trick); }
+        public Trick lastTrick() { return tricks.get(tricks.size() - 1); }
+
+        public Map<Player, Integer> scoreRound() {
+            for (Trick t : tricks) {
+                Player winner = t.getWinningPlayer();
+                Integer score = t.getScore();
+                scores.put(winner, score + scores.get(winner));
+            }
+
+            // Did one Player take all the points?
+
+            return scores;
+        }
+        public int scoreForPlayer(Player p) { return scores.get(p); }
+    }
+
+    public Round playRound() {
+        Round round = new Round();
+
+        dealCards();
+        //passCards();
+
+        Player leadingPlayer = null;
+        while (getPlayers().get(0).getHand().handSize() > 0) {
+            Game.Trick trick = playTrick(round);
+            leadingPlayer = trick.getWinningPlayer();
+            leadingPlayer.add(trick);
+
+            round.add(trick);
+        }
+
+        rounds.add(round);
+        return round;
+    }
+
+    public void dealCards() {
+        Deck deck = switch (options.numberOfPlayers) {
+            case 3 -> new Deck().remove(Card.TwoClubs);
+            case 5 -> new Deck().remove(Card.TwoClubs).remove(Card.TwoDiamonds);
+            case 6 -> new Deck().remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds);
+            default -> new Deck();
+        };
 
         deck.shuffle();
 
@@ -141,45 +244,56 @@ public class Game {
         }
     }
 
+    /**
+     * Passing operates in a rotational fashion, passing N cards to a player Y seats away from you,
+     * where both N and Y are dependent on the number of players playing.
+     */
+    public void passCards() {
+
+    }
+
     public class Trick {
-        public List<AbstractMap.SimpleEntry<Player, Card>> plays = new ArrayList<>(4);
+        public List<Pair<Player, Card>> plays = new ArrayList<>(4);
+
+        // This is a little hack to get the Game reference associated with this Trick
+        public Game getGame() { return Game.this; }
 
         public void play(Player player, Card card) {
-            plays.add(new AbstractMap.SimpleEntry<>(player, card));
+            plays.add(new Pair<>(player, card));
         }
 
         public Player getLeadingPlayer() {
             checkArgument(plays.size() > 0);
-            return plays.get(0).getKey();
+            return plays.get(0).first;
         }
 
         public Suit getLeadingSuit() {
             checkArgument(plays.size() > 0);
-            return plays.get(0).getValue().suit;
+            return plays.get(0).second.suit;
         }
 
-        public AbstractMap.SimpleEntry<Player, Card> getWinningPlay() {
+        public Pair<Player, Card> getWinningPlay() {
             checkArgument(plays.size() == options.numberOfPlayers);
 
             Suit leadSuit = getLeadingSuit();
             return plays.stream()
-                    .filter( (pair) -> pair.getValue().suit == leadSuit )
-                    .max( (c1, c2) -> c1.getValue().rank.ordinal() - c2.getValue().rank.ordinal() ).get();
+                    .filter( (pair) -> pair.second.suit == leadSuit )
+                    .max( (c1, c2) -> c1.second.rank.ordinal() - c2.second.rank.ordinal() ).get();
         }
 
         public Player getWinningPlayer() {
-            return getWinningPlay().getKey();
+            return getWinningPlay().first;
         }
 
         public Card getWinningCard() {
-            return getWinningPlay().getValue();
+            return getWinningPlay().second;
         }
 
         public int getScore() {
             int score = 0;
 
-            for (AbstractMap.SimpleEntry<Player, Card> play : plays) {
-                Card card = play.getValue();
+            for (Pair<Player, Card> play : plays) {
+                Card card = play.second;
                 if (card.suit == Suit.HEART) {
                     score++;
                 }
@@ -197,27 +311,49 @@ public class Game {
         }
     }
 
-    public Trick playTrick(Player leadingPlayer) {
-        Trick trick = new Trick();
+    public Trick playTrick(Round round) {
+        Trick currentTrick = new Trick();
 
-        if (leadingPlayer == null) {
+        Player leadingPlayer;
+        if (round.tricks.size() == 0) {
             // This is the first trick--the leading player is the one with the appropriate card
             leadingPlayer = findPlayerWith(options.getStartingCard());
             view.display(leadingPlayer.getName() + " must lead with the " + options.getStartingCard());
+        }
+        else {
+            leadingPlayer = round.tricks.get(round.tricks.size() - 1).getWinningPlayer();
+            view.display(leadingPlayer.getName() + " leads");
         }
 
         // Rotate through the list of Players, all the way around to the start
         // of the List if necessary (which it often will be); each Player gets
         // to play one Card
         for (Player player : turnOrder(players, leadingPlayer)) {
-            Card chosenCard = view.chooseCard(player);
+            while (true) {
+                Card chosenCard = view.chooseCard(player);
 
-            // verify chosen card is legal
+                // verify chosen card is in the player's hand, just to be double-certain
+                if (! player.getHand().contains(chosenCard)) {
+                    view.display("That card is not in your hand!");
+                    continue;
+                }
 
-            trick.play(player, chosenCard);
+                // verify chosen card is legal
+                Reason reason = options.legalCardToPlay(round, currentTrick, player, chosenCard);
+                if (!reason.result) {
+                    view.display("That card is not legal to play: " + reason.rationale);
+                }
+                else {
+                    currentTrick.play(player, chosenCard);
+                    break;
+                }
+            }
         }
 
-        return trick; //FIXME
+        return currentTrick;
+    }
+
+    public void scoreRound() {
     }
 
     private Player findPlayerWith(Card card) {

@@ -9,6 +9,7 @@ import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TestView implements View {
+    Game game;
     Game.Options options;
     int choiceCt = 0;
     List<Function<Player, Card>> choiceFns = new ArrayList<>();
@@ -19,10 +20,10 @@ class TestView implements View {
         this.choiceFns.addAll(Arrays.asList(choices));
     }
 
+    @Override public void attachGame(Game game) { this.game = game; }
     @Override public Game.Options getOptions() { return options; }
 
     @Override public void display(String message) { }
-
     @Override public void display(Player player) { }
 
     @Override
@@ -90,7 +91,8 @@ public class GameTests {
             player.setHand(hand);
         }
 
-        Game.Trick firstTrick = game.playTrick(null);
+        Game.Round round = game.new Round();
+        Game.Trick firstTrick = game.playTrick(round);
         assertEquals(game.getPlayerForName("Matt"), firstTrick.getWinningPlayer());
         assertEquals(0, firstTrick.getScore());
     }

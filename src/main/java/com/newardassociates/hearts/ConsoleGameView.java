@@ -1,6 +1,8 @@
 package com.newardassociates.hearts;
 
 public class ConsoleGameView implements View {
+    private Game game;
+
     public ConsoleGameView() { }
     // Future enhancement: take stdin/stdout as constructor parameters?
 
@@ -22,6 +24,11 @@ public class ConsoleGameView implements View {
     }
 
     @Override
+    public void attachGame(Game game) {
+        this.game = game;
+    }
+
+    @Override
     public Game.Options getOptions() {
         Game.Options options = new Game.Options();
 
@@ -36,6 +43,7 @@ public class ConsoleGameView implements View {
         options.hittingThresholdExactlyResetsToZero = prompt(false, "Does hitting the win threshold exactly reset the player's score to zero?");
         options.bloodOnFirstRound = prompt(false, "Should we allow points on the first round?");
         options.queenOfSpadesIsAHeart = prompt(true, "Does the Queen of Spades count as a heart?");
+        options.shootingAdds26ToOthers = prompt(true, "Does shooting add 26 to others, or subtract 26 from the shooter?");
 
         display("OK, here's what you selected:");
         display("We have " + options.numberOfPlayers + " players:");
@@ -60,8 +68,18 @@ public class ConsoleGameView implements View {
 
     @Override
     public Card chooseCard(Player player) {
-        System.console().writer().println("Player " + player.getName() + ", please choose a card:");
-
-        return null;
+        System.console().writer().println("Player " + player.getName() + ":");
+        int i=0;
+        for (Card card : player.getHand()) {
+            System.console().writer().print(i + ":" + card + " ");
+            i++;
+            if ((i % 5) == 0) {
+                System.console().writer().println();
+            }
+        }
+        System.console().writer().println();
+        System.console().printf("Please choose a card by index: ");
+        String card = System.console().readLine();
+        return Card.fromString(card);
     }
 }

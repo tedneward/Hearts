@@ -54,6 +54,9 @@ public class Hand
 
         return cards.get(index);
     }
+    public boolean contains(Card card) {
+        return cards.contains(card);
+    }
     public Card remove(Card card) {
         checkArgument(cards.contains(card));
 

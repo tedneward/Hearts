@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import static com.google.common.base.Preconditions.*;
 
 public class Game {
-    private Logger logger = Logger.getLogger("Game");
+    private final Logger logger = Logger.getLogger("Game");
 
     private View view;
     private final List<Player> players = new ArrayList<>();
@@ -80,13 +80,19 @@ public class Game {
          * @return True if this is legal, false otherwise
          */
         public Reason legalCardToPlay(Round round, Trick trick, Player player, Card card) {
+            trick.getGame().logger.entering(Options.class.getCanonicalName(),
+                    "legalCardToPlay",
+                    new Object[] { round, trick, player, card});
+
             // Is this the first trick?
             if (round.tricks.size() == 0) {
                 // Can points be played on the first round?
                 if ((card.suit == Suit.HEART) && (!bloodOnFirstRound)) {
+                    trick.getGame().logger.info("You cannot spill blood on the first round");
                     return new Reason(false, "You cannot spill blood on the first round");
                 }
                 if (card == Card.QueenSpades && (!bloodOnFirstRound) && (queenOfSpadesIsAHeart)) {
+                    trick.getGame().logger.info("You cannot play points on the first round--Queen is a heart");
                     return new Reason(false, "You cannot play points on the first round");
                 }
             }
@@ -95,6 +101,7 @@ public class Game {
             if ((trick.plays.size() == 0) && (card.suit == Suit.HEART)) {
                 // Have hearts been broken? Can't lead a heart until they have
                 if (! round.heartsBroken()) {
+                    trick.getGame().logger.info("You cannot lead a Heart until Hearts are broken");
                     return new Reason(false, "You cannot lead a Heart until Hearts are broken");
                 }
             }
@@ -103,12 +110,14 @@ public class Game {
             if ((trick.plays.size() > 0) && (card.suit != trick.getLeadingSuit())) {
                 // Does the player have a card of that suit?
                 for (Card c : player.getHand()) {
-                    if (c.suit == trick.getLeadingSuit()) {
+                    if (c != card && c.suit == trick.getLeadingSuit()) {
+                        trick.getGame().logger.info("You must play a card of the suit lead");
                         return new Reason(false, "You must play a card of the suit lead");
                     }
                 }
             }
 
+            trick.getGame().logger.info(card + " is an acceptable play");
             return new Reason(true, "");
         }
         // Add methods that handle the different options directly;
@@ -121,7 +130,6 @@ public class Game {
         // Should I check for null before assignment? Later allow for composite views by creating
         // a CompositeView class that tees everything to multiple views?
         this.view = view;
-        this.view.attachGame(this);
     }
 
     public List<Player> getPlayers() {
@@ -136,17 +144,18 @@ public class Game {
         return null;
     }
 
-    public boolean gameOver() {
-        return false;
-    }
-
     // For each scoring round: deal cards, pass, player with the two (or three or four) of clubs leads,
     // play trick (each player plays a card, beginning with whomever took last trick) until all cards are played,
     // score, check for win threshold
 
     public boolean prepare() {
-        if (options == null)
+        logger.entering(Game.class.getCanonicalName(), "prepare");
+
+        if (options == null) {
+            logger.info("Getting options from view");
             options = view.getOptions();
+            logger.info("options chosen: " + options);
+        }
 
         if (options.numberOfPlayers < 3) {
             view.display("Sorry, can't play with less than three players!");
@@ -183,6 +192,9 @@ public class Game {
         public boolean heartsBroken() {
             for (Trick t : tricks) {
                 for (Pair<Player, Card> play : t.plays) {
+                    if (play.second == Card.QueenSpades && options.queenOfSpadesIsAHeart) {
+                        return true;
+                    }
                     if (play.second.suit == Suit.HEART) {
                         return true;
                     }
@@ -228,11 +240,11 @@ public class Game {
     }
 
     public void dealCards() {
-        Deck deck = switch (options.numberOfPlayers) {
-            case 3 -> new Deck().remove(Card.TwoClubs);
-            case 5 -> new Deck().remove(Card.TwoClubs).remove(Card.TwoDiamonds);
-            case 6 -> new Deck().remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds);
-            default -> new Deck();
+        Deck deck = new Deck();
+        switch (options.numberOfPlayers) {
+            case 3: deck.remove(Card.TwoClubs);
+            case 5: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds);
+            case 6: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds);
         };
 
         deck.shuffle();
@@ -353,8 +365,14 @@ public class Game {
         return currentTrick;
     }
 
-    public void scoreRound() {
+    public boolean gameOver() {
+        return false;
     }
+
+    public Map<Player, Integer> getScores() {
+        return Collections.emptyMap();
+    }
+
 
     private Player findPlayerWith(Card card) {
         for (Player player : players) {

@@ -1,8 +1,9 @@
 package com.newardassociates.hearts;
 
-public class ConsoleGameView implements View {
-    private Game game;
+import java.io.PrintWriter;
+import java.util.Map;
 
+public class ConsoleGameView implements View {
     public ConsoleGameView() { }
     // Future enhancement: take stdin/stdout as constructor parameters?
 
@@ -21,11 +22,6 @@ public class ConsoleGameView implements View {
     }
     private String prompt(String message, Object... opts) {
         return System.console().readLine(message + ":", opts);
-    }
-
-    @Override
-    public void attachGame(Game game) {
-        this.game = game;
     }
 
     @Override
@@ -64,6 +60,15 @@ public class ConsoleGameView implements View {
     @Override
     public void display(Player player) {
         System.console().writer().println(player);
+    }
+
+    @Override
+    public void displayScores(Game game) {
+        System.console().writer().println("Scores:");
+        Map<Player, Integer> scores = game.getScores();
+        for (Player p : game.getPlayers()) {
+            System.console().writer().println("\t" + p.getName() + ": " + scores.get(p));
+        }
     }
 
     @Override

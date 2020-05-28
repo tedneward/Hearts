@@ -88,6 +88,7 @@ public class App {
             App.logger.info("Let's play a game");
             while (! g.gameOver()) {
                 g.playRound();
+                view.displayScores();
             }
             view.display("Game over! Hope you had fun!");
         }

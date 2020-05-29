@@ -95,7 +95,9 @@ public class Game {
     public Round beginRound() {
         checkArgument(currentRound == null, "Cannot begin a Round when one is already in progress!");
 
-        currentRound = new Round(this, getDeck(), getStartingCard());
+        currentRound = new Round(this);
+        currentRound.setDeck(getDeck());
+        currentRound.setStartingCard(getStartingCard());
         return currentRound;
     }
     public Round getCurrentRound() { return currentRound; }

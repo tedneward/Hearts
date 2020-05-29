@@ -1,21 +1,15 @@
 package com.newardassociates.hearts;
 
-import com.google.common.collect.Iterables;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
- * A collection of Plays. Each Trick starts with a led card, which determines
+ * A collection of Plays in a Round. Each Trick starts with a led card, which determines
  * the suit that all other players must follow if they can. Tricks always belong
  * to a Round.
  */
@@ -94,23 +88,50 @@ public class Trick {
         return "";
     }
 
+    /**
+     * Can be called at any time to find the suit that was led.
+     * @return null if nothing has been played yet, or else the suit that was led.
+     */
     public Suit getLedSuit() {
-        if (plays.size() > 0)
-            return plays.get(0).card.suit;
-        else
-            return null;
+        return (plays.size() > 0) ? plays.get(0).card.suit : null;
     }
 
-    public Play getWinningPlay() {
-        checkArgument(plays.size() == getRound().getGame().getOptions().numberOfPlayers);
-
+    /**
+     * Can be called at any time to find the current high card and the Player that played it.
+     * @return the winning play, or null if no cards have been played yet.
+     */
+    public Play getHighPlay() {
         Suit leadSuit = getLedSuit();
         return plays.stream()
                 .filter( (play) -> play.card.suit == leadSuit )
-                .max( (p1, p2) -> p1.card.rank.ordinal() - p2.card.rank.ordinal() ).get();
+                .max( (p1, p2) -> p1.card.rank.ordinal() - p2.card.rank.ordinal() ).orElse(null);
     }
+
+    /**
+     * Can be called only when the Trick is complete to find the Play that won the Trick.
+     * @return The winning Play.
+     */
+    public Play getWinningPlay() {
+        checkArgument(plays.size() == getRound().getGame().getOptions().numberOfPlayers);
+        return getHighPlay();
+    }
+
+    /**
+     * Can be called only when the Trick is complete to find the Player who won the Trick.
+     * @return The winning Player.
+     */
     public Player getWinningPlayer() { return getWinningPlay().player; }
 
+    /**
+     * Can be called only when the Trick is complete to find the Card that won the Trick.
+     * @return The winning Card.
+     */
+    public Card getWinningCard() { return getWinningPlay().card; }
+
+    /**
+     * Can be called at any time to find the current score value of the Trick.
+     * @return The score.
+     */
     public int getScore() {
         int score = 0;
         for (Play play : plays) {

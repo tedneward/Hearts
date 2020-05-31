@@ -22,6 +22,9 @@ public class TrickTests {
         options.jackOfDiamondsSubtractsTen = jack;
         game = new Game(options);
         round = game.beginRound();
+        for (Player player : game.getPlayers()) {
+            player.setHand(new Hand("AS")); // dummy hand
+        }
         trick = round.beginTrick();
         return trick;
     }

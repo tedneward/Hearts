@@ -41,6 +41,8 @@ public class Game {
                         "We have " + options.numberOfPlayers + " players " +
                         "and the following names: " + options.playerNames);
 
+        logger.info("Constructing Game using " + options);
+
         for (String name : options.playerNames) {
             players.add(new Player(name));
         }
@@ -82,9 +84,9 @@ public class Game {
     public Deck getDeck(boolean shuffle) {
         Deck deck = new Deck();
         switch (options.numberOfPlayers) {
-            case 3: deck.remove(Card.TwoClubs);
-            case 5: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds);
-            case 6: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds);
+            case 3: deck.remove(Card.TwoClubs); break;
+            case 5: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds); break;
+            case 6: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds); break;
         };
         if (shuffle)
             deck.shuffle();
@@ -94,6 +96,7 @@ public class Game {
 
     public Round beginRound() {
         checkArgument(currentRound == null, "Cannot begin a Round when one is already in progress!");
+        logger.info("Beginning new Round");
 
         currentRound = new Round(this);
         currentRound.setDeck(getDeck());
@@ -103,6 +106,7 @@ public class Game {
     public Round getCurrentRound() { return currentRound; }
     public void endRound() {
         checkArgument(currentRound != null, "Cannot end a Round when one hasn't been started!");
+        logger.info("Ending round");
 
         rounds.add(currentRound);
         currentRound = null;

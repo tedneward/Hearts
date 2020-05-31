@@ -96,7 +96,10 @@ public class Round {
         if (tricks.size() == 0) {
             Player startingPlayer =
                     game.getPlayers().stream().
-                            filter( (player) -> player.getHand().contains(startingCard)).
+                            filter( (player) -> {
+                                Hand hand = player.getHand();
+                                return hand.contains(startingCard);
+                            }). //player.getHand().contains(startingCard) ).
                             findFirst().orElse(null);
             logger.info("-- this is the first trick of the round; setting starting player to " + startingPlayer);
             trick.setLeadingPlayer(startingPlayer);

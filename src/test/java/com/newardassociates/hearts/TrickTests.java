@@ -2,7 +2,7 @@ package com.newardassociates.hearts;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TrickTests {
     Game game;
@@ -22,9 +22,8 @@ public class TrickTests {
         options.jackOfDiamondsSubtractsTen = jack;
         game = new Game(options);
         round = game.beginRound();
-        for (Player player : game.getPlayers()) {
-            player.setHand(new Hand("AS")); // dummy hand
-        }
+        round.setDeck(game.getDeck(false)); // No shuffle
+        round.dealHands();
         trick = round.beginTrick();
         return trick;
     }
@@ -208,5 +207,20 @@ public class TrickTests {
         assertEquals(game.getPlayerFromName("Char"), trick.getWinningPlayer());
         assertEquals(Card.QueenSpades, trick.getWinningPlay().card);
         assertEquals(17, trick.getScore());
+    }
+
+    @Test public void tryToPlayACardIDontHave() {
+        setupTrick(4);
+
+        Player ted = trick.getRound().getGame().getPlayerFromName("Ted");
+        Player mike = trick.getRound().getGame().getPlayerFromName("Mike");
+
+        assertEquals(ted, trick.getLeadingPlayer()); // Ted has 2C, should be required to lead
+        assertNotEquals("", trick.legalCardToPlay(new Play(ted, Card.FiveClubs)));
+            // Not the starting card, so not legal
+        assertNotEquals("", trick.legalCardToPlay(new Play(ted, Card.QueenClubs)));
+            // Not in Ted's hand, so not legal
+        assertNotEquals("", trick.legalCardToPlay(new Play(mike, Card.TwoClubs)));
+            // Not the leading Player AND not in Mike's hand, so not legal
     }
 }

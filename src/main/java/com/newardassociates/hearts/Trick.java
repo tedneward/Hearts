@@ -126,7 +126,7 @@ public class Trick {
         Suit leadSuit = getLedSuit();
         return plays.stream()
                 .filter( (play) -> play.card.suit == leadSuit )
-                .max( (p1, p2) -> p1.card.rank.ordinal() - p2.card.rank.ordinal() ).orElse(null);
+                .max( Play::compareRank ).orElse(null);
     }
 
     /**
@@ -145,13 +145,9 @@ public class Trick {
     public Player getWinningPlayer() { return getWinningPlay().player; }
 
     /**
-     * Can be called only when the Trick is complete to find the Card that won the Trick.
-     * @return The winning Card.
-     */
-    public Card getWinningCard() { return getWinningPlay().card; }
-
-    /**
      * Can be called at any time to find the current score value of the Trick.
+     * Does NOT count the Jack--that is calculated as part of the Round. (Much
+     * easier to calculate shooting if we don't include the Jack here.)
      * @return The score.
      */
     public int getScore() {
@@ -164,10 +160,6 @@ public class Trick {
 
             if (card == Card.QueenSpades) {
                 score += 13;
-            }
-
-            if (card == Card.JackDiamonds && getRound().getGame().getOptions().jackOfDiamondsSubtractsTen) {
-                score -= 10;
             }
         }
         return score;

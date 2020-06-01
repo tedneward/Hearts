@@ -2,9 +2,7 @@ package com.newardassociates.hearts;
 
 import com.google.common.base.Preconditions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -24,6 +22,7 @@ public class Round {
     private Trick currentTrick;
     private Deck deck;
     private Card startingCard;
+    private Map<Player, Integer> scores;
 
     public Round(Game game /*, Pass pass*/) {
         this.game = game;
@@ -56,13 +55,11 @@ public class Round {
 
     /**
      * Get an unmodifiable list of the Tricks that been played this Round so far.
-     * @return
      */
     public List<Trick> getTricks() { return Collections.unmodifiableList(tricks); }
 
     /**
      * Is the Round over?
-     * @return
      */
     public boolean over() { return tricks.size() == getGame().getHandSize(); }
 
@@ -131,4 +128,61 @@ public class Round {
     }
 
     // score the Round
+    public Map<Player, Integer> score() {
+        if (scores != null) {
+            return scores;
+        }
+
+        checkArgument(tricks.size() == getGame().getHandSize(),
+                "Can't see the score until the Round is complete");
+
+        Map<Player, Integer> scores = new HashMap<>();
+        for (Player player : getGame().getPlayers()) {
+            scores.put(player, 0);
+        }
+
+        for (Trick trick : tricks) {
+            scores.put(trick.getWinningPlayer(),
+                    scores.get(trick.getWinningPlayer()) + trick.getScore());
+        }
+
+        // Check for moonshot
+        for (Map.Entry<Player, Integer> pair : scores.entrySet()) {
+            int score = pair.getValue();
+            Player player = pair.getKey();
+
+            if (score == 26) {
+                // player shot! Everybody gets 26 except this player
+                logger.info(player.getName() + " shot the moon!");
+                if (getGame().getOptions().shootingAdds26ToOthers) {
+                    // Put 26 to everybody except this player
+                    for (Player p : getGame().getPlayers()) {
+                        if (p == player)
+                            scores.put(p, 0);
+                        else
+                            scores.put(p, 26);
+                    }
+                }
+                else {
+                    scores.put(player, -26);
+                }
+            }
+        }
+
+        // Check for JackOfDiamonds
+        if (getGame().getOptions().jackOfDiamondsSubtractsTen) {
+            // Find the player who had the Jack in the Tricks
+            for (Trick trick : tricks) {
+                for (Play play : trick.getPlays()) {
+                    if (play.card == Card.JackDiamonds) {
+                        scores.put(trick.getWinningPlayer(),
+                                scores.get(trick.getWinningPlayer()) - 10);
+                    }
+                }
+            }
+        }
+
+        this.scores = scores;
+        return scores;
+    }
 }

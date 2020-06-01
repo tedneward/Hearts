@@ -1,5 +1,6 @@
 package com.newardassociates.hearts;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -10,6 +11,8 @@ public class Play {
     public Card card;
 
     public Play(Player player, Card card) { this.player = player; this.card = card; }
+
+    public static int compareRank(Play p1, Play p2) { return p1.card.rank.ordinal() - p2.card.rank.ordinal(); }
 
     @Override
     public boolean equals(Object o) {

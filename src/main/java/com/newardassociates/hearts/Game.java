@@ -1,9 +1,6 @@
 package com.newardassociates.hearts;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.*;
@@ -87,7 +84,7 @@ public class Game {
             case 3: deck.remove(Card.TwoClubs); break;
             case 5: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds); break;
             case 6: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds); break;
-        };
+        }
         if (shuffle)
             deck.shuffle();
         return deck;
@@ -110,5 +107,30 @@ public class Game {
 
         rounds.add(currentRound);
         currentRound = null;
+    }
+
+    public Map<Player, Integer> calculateScores() {
+        Map<Player, Integer> scores = new HashMap<>();
+        for (Round round : rounds) {
+            for (Player player : round.score().keySet()) {
+                scores.put(player, scores.get(player) + round.score().get(player));
+
+                // Reset at winThreshold exactly if that option is turned on
+                if (options.hittingThresholdExactlyResetsToZero &&
+                        (scores.get(player) == options.winThreshold)) {
+                    scores.put(player, 0);
+                }
+            }
+        }
+        return scores;
+    }
+
+    public boolean over() {
+        Map<Player, Integer> scores = calculateScores();
+        for (Player player : players) {
+            if (scores.get(player) > options.winThreshold)
+                return true;
+        }
+        return false;
     }
 }

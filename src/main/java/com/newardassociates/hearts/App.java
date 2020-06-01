@@ -26,7 +26,7 @@ public class App {
             options.addOption(o);
 
         CommandLineParser parser = new DefaultParser();
-        CommandLine commandLine = null;
+        CommandLine commandLine;
         try {
             commandLine = parser.parse(options, args);
         }
@@ -53,6 +53,6 @@ public class App {
 
     public static void usage() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java " + App.class.getCanonicalName().toString(), options);
+        formatter.printHelp("java " + App.class.getCanonicalName(), options);
     }
 }

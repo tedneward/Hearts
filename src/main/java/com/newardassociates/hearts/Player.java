@@ -1,8 +1,5 @@
 package com.newardassociates.hearts;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Player {
     private final String name;
     private Hand hand;

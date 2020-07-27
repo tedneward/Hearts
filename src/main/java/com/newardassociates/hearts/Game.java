@@ -1,9 +1,6 @@
 package com.newardassociates.hearts;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.*;
@@ -40,6 +37,8 @@ public class Game {
                 "We don't have names for all of the players! " +
                         "We have " + options.numberOfPlayers + " players " +
                         "and the following names: " + options.playerNames);
+
+        logger.info("Constructing Game using " + options);
 
         for (String name : options.playerNames) {
             players.add(new Player(name));
@@ -82,10 +81,10 @@ public class Game {
     public Deck getDeck(boolean shuffle) {
         Deck deck = new Deck();
         switch (options.numberOfPlayers) {
-            case 3: deck.remove(Card.TwoClubs);
-            case 5: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds);
-            case 6: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds);
-        };
+            case 3: deck.remove(Card.TwoClubs); break;
+            case 5: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds); break;
+            case 6: deck.remove(Card.TwoClubs).remove(Card.TwoDiamonds).remove(Card.ThreeClubs).remove(Card.ThreeDiamonds); break;
+        }
         if (shuffle)
             deck.shuffle();
         return deck;
@@ -94,6 +93,7 @@ public class Game {
 
     public Round beginRound() {
         checkArgument(currentRound == null, "Cannot begin a Round when one is already in progress!");
+        logger.info("Beginning new Round");
 
         currentRound = new Round(this);
         currentRound.setDeck(getDeck());
@@ -103,8 +103,34 @@ public class Game {
     public Round getCurrentRound() { return currentRound; }
     public void endRound() {
         checkArgument(currentRound != null, "Cannot end a Round when one hasn't been started!");
+        logger.info("Ending round");
 
         rounds.add(currentRound);
         currentRound = null;
+    }
+
+    public Map<Player, Integer> calculateScores() {
+        Map<Player, Integer> scores = new HashMap<>();
+        for (Round round : rounds) {
+            for (Player player : round.score().keySet()) {
+                scores.put(player, scores.get(player) + round.score().get(player));
+
+                // Reset at winThreshold exactly if that option is turned on
+                if (options.hittingThresholdExactlyResetsToZero &&
+                        (scores.get(player) == options.winThreshold)) {
+                    scores.put(player, 0);
+                }
+            }
+        }
+        return scores;
+    }
+
+    public boolean over() {
+        Map<Player, Integer> scores = calculateScores();
+        for (Player player : players) {
+            if (scores.get(player) > options.winThreshold)
+                return true;
+        }
+        return false;
     }
 }

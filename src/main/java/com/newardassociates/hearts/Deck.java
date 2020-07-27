@@ -11,7 +11,7 @@ import static com.google.common.base.Preconditions.*;
 
 public class Deck
         implements Iterable<Card> {
-    private List<Card> cards = new ArrayList<>();
+    private final List<Card> cards = new ArrayList<>();
 
     /**
      * Create a new 52-card deck, shuffle it

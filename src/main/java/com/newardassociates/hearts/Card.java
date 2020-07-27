@@ -79,15 +79,12 @@ public class Card {
         }
     }
 
-    public static Comparator<Card> BY_SUIT_THEN_RANK = new Comparator<Card>() {
-        @Override
-        public int compare(Card o1, Card o2) {
-            int suitOrdinal = o1.suit.ordinal() - o2.suit.ordinal();
-            if (suitOrdinal == 0)
-                return o1.rank.ordinal() - o2.rank.ordinal();
-            else
-                return suitOrdinal;
-        }
+    public static Comparator<Card> BY_SUIT_THEN_RANK = (o1, o2) -> {
+        int suitOrdinal = o1.suit.ordinal() - o2.suit.ordinal();
+        if (suitOrdinal == 0)
+            return o1.rank.ordinal() - o2.rank.ordinal();
+        else
+            return suitOrdinal;
     };
 
     /*
